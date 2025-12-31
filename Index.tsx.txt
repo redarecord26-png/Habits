@@ -1,0 +1,96 @@
+import { useState, useEffect } from 'react';
+import { useHabits } from '@/hooks/useHabits';
+import SplashScreen from '@/components/SplashScreen';
+import WelcomeScreen from '@/components/WelcomeScreen';
+import OnboardingScreen from '@/components/OnboardingScreen';
+import HomeScreen from '@/components/HomeScreen';
+
+type AppScreen = 'splash' | 'welcome' | 'onboarding' | 'home';
+
+const Index = () => {
+  const {
+    habits,
+    uniqueId,
+    username,
+    hasCompletedOnboarding,
+    claimedChallenges,
+    addHabit,
+    toggleHabitForDate,
+    deleteHabit,
+    completeOnboarding,
+    setUsername,
+    claimChallenge,
+    calculateStreak,
+    getMonthlyProgress,
+    getWeekNumber,
+    getWeeklyCompletions,
+  } = useHabits();
+
+  const [currentScreen, setCurrentScreen] = useState<AppScreen>('splash');
+
+  useEffect(() => {
+    if (hasCompletedOnboarding) {
+      setCurrentScreen('home');
+    }
+  }, [hasCompletedOnboarding]);
+
+  const handleSplashComplete = () => {
+    if (hasCompletedOnboarding) {
+      setCurrentScreen('home');
+    } else {
+      setCurrentScreen('welcome');
+    }
+  };
+
+  const handleStartOnboarding = () => {
+    setCurrentScreen('onboarding');
+  };
+
+  const handleOnboardingComplete = (habitName: string, habitIcon: string, newUsername: string) => {
+    addHabit(habitName, habitIcon);
+    if (newUsername) {
+      setUsername(newUsername);
+    }
+    completeOnboarding();
+    setCurrentScreen('home');
+  };
+
+  const { week, year } = getWeekNumber(new Date());
+
+  return (
+    <>
+      {currentScreen === 'splash' && (
+        <SplashScreen onComplete={handleSplashComplete} />
+      )}
+      
+      {currentScreen === 'welcome' && (
+        <WelcomeScreen onStart={handleStartOnboarding} />
+      )}
+      
+      {currentScreen === 'onboarding' && (
+        <OnboardingScreen onComplete={handleOnboardingComplete} />
+      )}
+      
+      {currentScreen === 'home' && (
+        <HomeScreen
+          habits={habits}
+          streak={calculateStreak()}
+          uniqueId={uniqueId}
+          username={username}
+          claimedChallenges={claimedChallenges}
+          weekNumber={week}
+          year={year}
+          weeklyCompletions={getWeeklyCompletions()}
+          onAddHabit={addHabit}
+          onToggleHabit={toggleHabitForDate}
+          onDeleteHabit={deleteHabit}
+          onSetUsername={setUsername}
+          onClaimChallenge={claimChallenge}
+          getProgress={getMonthlyProgress}
+        />
+      )}
+    </>
+  );
+};
+
+export default Index;
