@@ -1,0 +1,58 @@
+import { Check, X } from 'lucide-react';
+import { Habit } from '@/types/habit';
+
+interface HabitCardProps {
+  habit: Habit;
+  progress: number;
+  isCompletedToday: boolean;
+  onToggle: () => void;
+}
+
+const HabitCard = ({ habit, progress, isCompletedToday, onToggle }: HabitCardProps) => {
+  return (
+    <div 
+      className={`bg-card rounded-2xl p-4 border transition-all duration-300 ${
+        isCompletedToday 
+          ? 'border-primary/50 glow-subtle' 
+          : 'border-border hover:border-border/80'
+      }`}
+    >
+      <div className="flex items-center gap-4">
+        <div className="text-2xl">{habit.icon}</div>
+        
+        <div className="flex-1 min-w-0">
+          <h3 className="text-foreground font-medium truncate">{habit.name}</h3>
+          
+          <div className="mt-2 flex items-center gap-3">
+            <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-primary rounded-full transition-all duration-500"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <span className="text-xs text-muted-foreground whitespace-nowrap">
+              {progress}%
+            </span>
+          </div>
+        </div>
+
+        <button
+          onClick={onToggle}
+          className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${
+            isCompletedToday
+              ? 'bg-primary text-primary-foreground glow-primary'
+              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+          }`}
+        >
+          {isCompletedToday ? (
+            <Check className="w-5 h-5" />
+          ) : (
+            <X className="w-5 h-5" />
+          )}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default HabitCard;

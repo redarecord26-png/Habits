@@ -1,0 +1,123 @@
+import { Habit } from '@/types/habit';
+import { TrendingUp, Calendar, Target } from 'lucide-react';
+
+interface StatisticsProps {
+  habits: Habit[];
+}
+
+const Statistics = ({ habits }: StatisticsProps) => {
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+  const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+
+  const getMonthCompletions = (habit: Habit, month: number, year: number): number => {
+    return habit.completedDates.filter(date => {
+      const d = new Date(date);
+      return d.getMonth() === month && d.getFullYear() === year;
+    }).length;
+  };
+
+  const getDaysInMonth = (month: number, year: number): number => {
+    return new Date(year, month + 1, 0).getDate();
+  };
+
+  const currentMonthDays = now.getDate();
+  const lastMonthDays = getDaysInMonth(lastMonth, lastMonthYear);
+
+  const monthNames = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ];
+
+  if (habits.length === 0) {
+    return (
+      <div className="bg-card rounded-2xl p-6 border border-border text-center">
+        <p className="text-muted-foreground">
+          Crea tu primer hábito para ver estadísticas
+        </p>
+      </div>
+    );
+  }
+
+  const totalCurrentMonth = habits.reduce((sum, habit) => 
+    sum + getMonthCompletions(habit, currentMonth, currentYear), 0
+  );
+  
+  const totalLastMonth = habits.reduce((sum, habit) => 
+    sum + getMonthCompletions(habit, lastMonth, lastMonthYear), 0
+  );
+
+  const currentRate = Math.round((totalCurrentMonth / (currentMonthDays * habits.length)) * 100);
+  const lastRate = Math.round((totalLastMonth / (lastMonthDays * habits.length)) * 100);
+  const improvement = currentRate - lastRate;
+
+  return (
+    <div className="space-y-4">
+      {/* Overview cards */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="bg-card rounded-2xl p-4 border border-border">
+          <div className="flex items-center gap-2 mb-2">
+            <Target className="w-4 h-4 text-primary" />
+            <span className="text-xs text-muted-foreground">Este mes</span>
+          </div>
+          <p className="text-2xl font-bold text-foreground">{currentRate}%</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {totalCurrentMonth} de {currentMonthDays * habits.length}
+          </p>
+        </div>
+
+        <div className="bg-card rounded-2xl p-4 border border-border">
+          <div className="flex items-center gap-2 mb-2">
+            <TrendingUp className={`w-4 h-4 ${improvement >= 0 ? 'text-primary' : 'text-destructive'}`} />
+            <span className="text-xs text-muted-foreground">vs {monthNames[lastMonth]}</span>
+          </div>
+          <p className={`text-2xl font-bold ${improvement >= 0 ? 'text-primary' : 'text-destructive'}`}>
+            {improvement >= 0 ? '+' : ''}{improvement}%
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {lastRate}% el mes pasado
+          </p>
+        </div>
+      </div>
+
+      {/* Per habit stats */}
+      <div className="bg-card rounded-2xl p-6 border border-border">
+        <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-primary" />
+          Progreso por hábito
+        </h3>
+
+        <div className="space-y-4">
+          {habits.map(habit => {
+            const completions = getMonthCompletions(habit, currentMonth, currentYear);
+            const rate = Math.round((completions / currentMonthDays) * 100);
+            
+            return (
+              <div key={habit.id}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span>{habit.icon}</span>
+                    <span className="text-sm text-foreground">{habit.name}</span>
+                  </div>
+                  <span className="text-sm text-muted-foreground">{rate}%</span>
+                </div>
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      rate >= 80 ? 'bg-primary glow-subtle' : 'bg-primary/60'
+                    }`}
+                    style={{ width: `${rate}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Statistics;

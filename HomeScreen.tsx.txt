@@ -1,0 +1,165 @@
+import { useState } from 'react';
+import { Menu, Plus, Calendar, BarChart3, ListChecks } from 'lucide-react';
+import { Habit } from '@/types/habit';
+import StreakDisplay from './StreakDisplay';
+import HabitCard from './HabitCard';
+import HabitCalendar from './HabitCalendar';
+import Statistics from './Statistics';
+import CreateHabitModal from './CreateHabitModal';
+import MenuDrawer from './MenuDrawer';
+import { Button } from '@/components/ui/button';
+
+interface HomeScreenProps {
+  habits: Habit[];
+  streak: number;
+  uniqueId: string | null;
+  onAddHabit: (name: string, icon: string) => void;
+  onToggleHabit: (habitId: string, date: string) => void;
+  onDeleteHabit: (habitId: string) => void;
+  onGenerateId: () => string;
+  getProgress: (habitId: string) => number;
+}
+
+type TabType = 'habits' | 'calendar' | 'stats';
+
+const HomeScreen = ({
+  habits,
+  streak,
+  uniqueId,
+  onAddHabit,
+  onToggleHabit,
+  onDeleteHabit,
+  onGenerateId,
+  getProgress,
+}: HomeScreenProps) => {
+  const [activeTab, setActiveTab] = useState<TabType>('habits');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  const today = new Date().toISOString().split('T')[0];
+
+  const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
+    { id: 'habits', label: 'Hábitos', icon: <ListChecks className="w-4 h-4" /> },
+    { id: 'calendar', label: 'Calendario', icon: <Calendar className="w-4 h-4" /> },
+    { id: 'stats', label: 'Estadísticas', icon: <BarChart3 className="w-4 h-4" /> },
+  ];
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border">
+        <div className="px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+              <span className="text-primary text-lg">🔥</span>
+            </div>
+            <span className="font-semibold text-foreground">Constancia</span>
+          </div>
+          
+          <button
+            onClick={() => setIsMenuOpen(true)}
+            className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        </div>
+      </header>
+
+      <main className="px-4 py-6 pb-24 max-w-lg mx-auto">
+        {/* Streak */}
+        <div className="mb-6 animate-fade-in">
+          <StreakDisplay streak={streak} />
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-all ${
+                activeTab === tab.id
+                  ? 'bg-primary text-primary-foreground glow-subtle'
+                  : 'bg-muted text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {tab.icon}
+              <span className="hidden sm:inline">{tab.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Content */}
+        <div className="animate-fade-in">
+          {activeTab === 'habits' && (
+            <div className="space-y-4">
+              {habits.length === 0 ? (
+                <div className="bg-card rounded-2xl p-8 border border-border text-center">
+                  <p className="text-muted-foreground mb-4">
+                    Aún no tienes hábitos
+                  </p>
+                  <Button onClick={() => setIsCreateModalOpen(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Crear primer hábito
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  {habits.map(habit => (
+                    <HabitCard
+                      key={habit.id}
+                      habit={habit}
+                      progress={getProgress(habit.id)}
+                      isCompletedToday={habit.completedDates.includes(today)}
+                      onToggle={() => onToggleHabit(habit.id, today)}
+                    />
+                  ))}
+                  
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setIsCreateModalOpen(true)}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Añadir hábito
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'calendar' && (
+            <HabitCalendar
+              habits={habits}
+              onToggleDate={onToggleHabit}
+            />
+          )}
+
+          {activeTab === 'stats' && (
+            <Statistics habits={habits} />
+          )}
+        </div>
+      </main>
+
+      {/* Menu Drawer */}
+      <MenuDrawer
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        onNavigate={(view) => {
+          if (view === 'habits') setActiveTab('habits');
+        }}
+        uniqueId={uniqueId}
+        onGenerateId={onGenerateId}
+      />
+
+      {/* Create Modal */}
+      <CreateHabitModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreate={onAddHabit}
+      />
+    </div>
+  );
+};
+
+export default HomeScreen;

@@ -1,0 +1,41 @@
+import { Button } from '@/components/ui/button';
+import { Flame } from 'lucide-react';
+
+interface WelcomeScreenProps {
+  onStart: () => void;
+}
+
+const WelcomeScreen = ({ onStart }: WelcomeScreenProps) => {
+  return (
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
+      <div className="max-w-sm w-full text-center">
+        <div className="mb-12 animate-fade-in">
+          <div className="w-20 h-20 mx-auto rounded-2xl bg-card flex items-center justify-center glow-primary">
+            <Flame className="w-10 h-10 text-primary" />
+          </div>
+        </div>
+
+        <h1 className="text-3xl font-semibold text-foreground mb-4 animate-slide-up">
+          Construye hábitos,<br />mes a mes
+        </h1>
+        
+        <p className="text-muted-foreground text-lg mb-12 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+          Seguimiento claro, sin presión
+        </p>
+
+        <div className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
+          <Button 
+            onClick={onStart} 
+            size="lg" 
+            variant="glow"
+            className="w-full"
+          >
+            Empezar
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default WelcomeScreen;

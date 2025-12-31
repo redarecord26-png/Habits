@@ -1,0 +1,139 @@
+import { useState } from react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Habit } from '@/types/habit';
+
+interface HabitCalendarProps {
+  habits: Habit[];
+  onToggleDate: (habitId: string, date: string) => void;
+}
+
+const HabitCalendar = ({ habits, onToggleDate }: HabitCalendarProps) => {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedHabit, setSelectedHabit] = useState<string | null>(
+    habits.length > 0 ? habits[0].id : null
+  );
+
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDayOfMonth = new Date(year, month, 1).getDay();
+
+  const monthNames = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ];
+
+  const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+
+  const habit = habits.find(h => h.id === selectedHabit);
+
+  const isDateCompleted = (day: number): boolean => {
+    if (!habit) return false;
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    return habit.completedDates.includes(dateStr);
+  };
+
+  const handleDayClick = (day: number) => {
+    if (!selectedHabit) return;
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    onToggleDate(selectedHabit, dateStr);
+  };
+
+  const today = new Date();
+  const isToday = (day: number): boolean => {
+    return today.getFullYear() === year && 
+           today.getMonth() === month && 
+           today.getDate() === day;
+  };
+
+  const isFuture = (day: number): boolean => {
+    const date = new Date(year, month, day);
+    return date > today;
+  };
+
+  return (
+    <div className="bg-card rounded-2xl p-6 border border-border">
+      {/* Habit selector */}
+      {habits.length > 1 && (
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+          {habits.map(h => (
+            <button
+              key={h.id}
+              onClick={() => setSelectedHabit(h.id)}
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl whitespace-nowrap transition-all ${
+                selectedHabit === h.id
+                  ? 'bg-primary/20 text-foreground border border-primary/50'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              <span>{h.icon}</span>
+              <span className="text-sm">{h.name}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Month navigation */}
+      <div className="flex items-center justify-between mb-6">
+        <button
+          onClick={() => setCurrentDate(new Date(year, month - 1))}
+          className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+        
+        <h3 className="text-lg font-medium text-foreground">
+          {monthNames[month]} {year}
+        </h3>
+        
+        <button
+          onClick={() => setCurrentDate(new Date(year, month + 1))}
+          className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* Day names */}
+      <div className="grid grid-cols-7 gap-1 mb-2">
+        {dayNames.map(day => (
+          <div key={day} className="text-center text-xs text-muted-foreground py-2">
+            {day}
+          </div>
+        ))}
+      </div>
+
+      {/* Calendar grid */}
+      <div className="grid grid-cols-7 gap-1">
+        {Array.from({ length: firstDayOfMonth }).map((_, i) => (
+          <div key={`empty-${i}`} />
+        ))}
+        
+        {Array.from({ length: daysInMonth }).map((_, i) => {
+          const day = i + 1;
+          const completed = isDateCompleted(day);
+          const future = isFuture(day);
+          
+          return (
+            <button
+              key={day}
+              onClick={() => !future && handleDayClick(day)}
+              disabled={future}
+              className={`aspect-square rounded-xl flex items-center justify-center text-sm transition-all ${
+                completed
+                  ? 'bg-primary text-primary-foreground glow-subtle'
+                  : future
+                    ? 'text-muted-foreground/30 cursor-not-allowed'
+                    : 'text-muted-foreground hover:bg-muted'
+              } ${isToday(day) && !completed ? 'ring-1 ring-primary/50' : ''}`}
+            >
+              {day}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+export default HabitCalendar;

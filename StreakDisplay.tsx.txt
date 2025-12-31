@@ -1,0 +1,41 @@
+import { Flame } from 'lucide-react';
+
+interface StreakDisplayProps {
+  streak: number;
+}
+
+const StreakDisplay = ({ streak }: StreakDisplayProps) => {
+  return (
+    <div className="bg-card rounded-2xl p-6 border border-border relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
+      
+      <div className="relative flex items-center gap-4">
+        <div className="w-14 h-14 rounded-2xl bg-primary/20 flex items-center justify-center glow-primary animate-pulse-glow">
+          <Flame className="w-7 h-7 text-primary" />
+        </div>
+        
+        <div>
+          <p className="text-sm text-muted-foreground mb-1">Racha diaria</p>
+          <div className="flex items-baseline gap-2">
+            <span className="text-4xl font-bold text-foreground text-glow">
+              {streak}
+            </span>
+            <span className="text-muted-foreground text-sm">
+              {streak === 1 ? 'día' : 'días'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {streak > 0 && (
+        <p className="relative mt-4 text-sm text-muted-foreground">
+          {streak < 7 && "Buen comienzo. Sigue así."}
+          {streak >= 7 && streak < 30 && "Una semana de constancia. Impresionante."}
+          {streak >= 30 && "Un mes completo. Eres imparable."}
+        </p>
+      )}
+    </div>
+  );
+};
+
+export default StreakDisplay;

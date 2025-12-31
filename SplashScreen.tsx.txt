@@ -1,0 +1,41 @@
+import { useEffect, useState } from 'react';
+import { Flame } from 'lucide-react';
+
+interface SplashScreenProps {
+  onComplete: () => void;
+}
+
+const SplashScreen = ({ onComplete }: SplashScreenProps) => {
+  const [fadeOut, setFadeOut] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFadeOut(true);
+      setTimeout(onComplete, 500);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [onComplete]);
+
+  return (
+    <div 
+      className={`fixed inset-0 bg-gradient-radial flex flex-col items-center justify-center transition-opacity duration-500 ${
+        fadeOut ? 'opacity-0' : 'opacity-100'
+      }`}
+    >
+      <div className="relative animate-fade-in">
+        <div className="w-24 h-24 rounded-2xl bg-card flex items-center justify-center glow-primary-intense animate-pulse-glow">
+          <Flame className="w-12 h-12 text-primary" />
+        </div>
+      </div>
+      <h1 className="mt-8 text-2xl font-semibold text-foreground animate-fade-in" style={{ animationDelay: '0.3s' }}>
+        Constancia
+      </h1>
+      <p className="mt-2 text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: '0.5s' }}>
+        Hábitos sin presión
+      </p>
+    </div>
+  );
+};
+
+export default SplashScreen;
