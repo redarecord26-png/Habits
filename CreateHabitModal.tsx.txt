@@ -1,0 +1,94 @@
+import { useState } from 'react';
+import { X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { HABIT_ICONS } from '@/types/habit';
+
+interface CreateHabitModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onCreate: (name: string, icon: string) => void;
+}
+
+const CreateHabitModal = ({ isOpen, onClose, onCreate }: CreateHabitModalProps) => {
+  const [name, setName] = useState('');
+  const [selectedIcon, setSelectedIcon] = useState(HABIT_ICONS[0].icon);
+
+  if (!isOpen) return null;
+
+  const handleCreate = () => {
+    if (name.trim()) {
+      onCreate(name, selectedIcon);
+      setName('');
+      setSelectedIcon(HABIT_ICONS[0].icon);
+      onClose();
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div 
+        className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      
+      <div className="relative bg-card rounded-2xl p-6 w-full max-w-sm border border-border animate-scale-in">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
+
+        <h2 className="text-xl font-semibold text-foreground mb-6">
+          Nuevo hábito
+        </h2>
+
+        <div className="mb-6">
+          <label className="text-sm text-muted-foreground mb-2 block">
+            Nombre
+          </label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Ej: Leer 20 minutos"
+            className="w-full bg-muted border-0 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            maxLength={30}
+            autoFocus
+          />
+        </div>
+
+        <div className="mb-8">
+          <label className="text-sm text-muted-foreground mb-3 block">
+            Icono
+          </label>
+          <div className="grid grid-cols-8 gap-2">
+            {HABIT_ICONS.map(({ icon }) => (
+              <button
+                key={icon}
+                onClick={() => setSelectedIcon(icon)}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-all ${
+                  selectedIcon === icon
+                    ? 'bg-primary/20 ring-2 ring-primary glow-subtle'
+                    : 'bg-muted hover:bg-muted/80'
+                }`}
+              >
+                {icon}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <Button 
+          onClick={handleCreate} 
+          className="w-full"
+          disabled={!name.trim()}
+        >
+          Crear hábito
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+export default CreateHabitModal;
